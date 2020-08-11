@@ -27,15 +27,15 @@ include("atrium_composition.jl")
 
 
 # General settings
-iteration_number = 100000  #Default =
+iteration_number = 1_000_000  #Default =
 iterations_block_2 = 100000  #Default =
-n_comparts = 500  #Default =
-tolerance_1 = 0.1  #Tolerance at STEP 1, default = 10%
+n_comparts = 100  #Default =
+tolerance_1 = 0.05  #Tolerance at STEP 1, default = 10%
 tolerance_2 = 0.05  #Tolerance at STEP 2, default = 5%
 dummy_gradient = false   #True to escape from debugging and start calculations
 
-# Patient asset input: ###################### CHANGE PATIENT NAME ######################
-patient_file_name = "prova2"
+# Patient asset input
+patient_file_name = "prova3"
 qt = 5
 shunt = 0.02
 fio2 = 0.21
@@ -47,15 +47,15 @@ pco2_ven_input = 50
 
 # Patient asset TARGET
 po2_art_patient = 90
-pco2_art_patient = 40
+pco2_art_patient = 44
 
 
 # Header writing, STEP 1
 path = "Results//" * patient_file_name * "_step_1.csv"
 headers =
-    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "solution"]
+    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven"]
 open(path, "w") do io
-    writedlm(io, headers, ";")
+    writedlm(io, headers, ",")
 end
 
 
@@ -107,11 +107,12 @@ for i = 1:3
 end
 
 # Space of random choices
-space_vq_1 = collect(log_distribution(min_vaq, 100, 100))
-space_vq_2 = collect(log_distribution(min_vaq, 100, 100))
-space_sd_1 = collect(range(0.3, 2, step = 0.1))
-space_sd_2 = collect(range(0.3, 2, step = 0.1))
-space_qt_ratio = collect(range(0, 1, step = 0.05))
+
+space_vq_1 = collect(log_distribution(min_vaq, 100, 5000))
+space_vq_2 = collect(log_distribution(min_vaq, 100, 5000))
+space_sd_1 = collect(range(0.3, 2, step = 0.005))
+space_sd_2 = collect(range(0.3, 2, step = 0.005))
+space_qt_ratio = collect(range(0, 1, step = 0.005))
 
 # Array for solutions and counter solutions below tolerance
 global solutions = Array{Float64}(undef, 0, 14)
@@ -173,13 +174,17 @@ println("###### START ITERATION STEP 1 ######")
             gradient_po2 = abs((po2_art_patient - output[6])) / po2_art_patient
             gradient_pco2 =
                 abs((pco2_art_patient - output[9])) / pco2_art_patient
+            euclidean_distance = sqrt(
+                (po2_art_patient - output[6])^2 +
+                (pco2_art_patient - output[9])^2,
+            )
         else
             gradient_po2 = 0.09
             gradient_pco2 = 0.09
         end
 
 
-        array_solution = Array{Float64}(undef, 1, 15)
+        array_solution = Array{Float64}(undef, 1, 24)
         array_solution[1:14] = output
 
         vo2 = output[1]
@@ -191,10 +196,20 @@ println("###### START ITERATION STEP 1 ######")
         if gradient_po2 <= tolerance_1 && gradient_pco2 <= tolerance_1 && r <= 1
 
             global counter_step_1 += 1
-            array_solution[15] = counter_step_1
+            array_solution[15] = euclidean_distance
+            array_solution[16] = counter_step_1
+            array_solution[17] = qt
+            array_solution[18] = shunt
+            array_solution[19] = fio2
+            array_solution[20] = hb_global
+            array_solution[21] = be_global
+            array_solution[22] = dead_space
+            array_solution[23] = po2_ven_input
+            array_solution[24] = pco2_ven_input
+
             global solutions = vcat(solutions, output)
             open(path, "a") do io
-                writedlm(io, array_solution, ";")
+                writedlm(io, array_solution, ",")
             end
         end
 
@@ -205,6 +220,8 @@ end
 
 # End STEP 1
 
+#=
+
 println("")
 println("")
 println("###### START ITERATION STEP 2 ######")
@@ -212,22 +229,24 @@ println("###### START ITERATION STEP 2 ######")
 # Start STEP 2: everything is repeated essentially in the same way
 path_2 = "Results//" * patient_file_name * "_step_2.csv"
 headers =
-    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "solution"]
+    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven"]
 open(path_2, "w") do io
-    writedlm(io, headers, ";")
+    writedlm(io, headers, ",")
 end
 
 # Parameters for range selection over the given solution
-percent_bound_vq = 0.1
-scans = 500
-sd_bound = 0.1
-step_sd = 0.01
-qt_bound = 0.10
+percent_bound_vq = 0.2
+scans = 2000
+sd_bound = 0.05
+step_sd = 0.005
+qt_bound = 0.1
 step_ratio = 0.01
 
 # Indexes to keep track among solutions
 row_index = 0
 length_sol = length(solutions[:, 1])
+
+
 
 #= For EACH SOLUTION below tolerance in STEP 1, the paramters of the VA/Q distribution are varied
 within the limits specified above. In STEP 2 the tolerance is lowered to fine tune the
@@ -326,14 +345,28 @@ results.
                         abs((po2_art_patient - output[6])) / po2_art_patient
                     gradient_pco2 =
                         abs((pco2_art_patient - output[9])) / pco2_art_patient
+                    euclidean_distance = sqrt(
+                        (po2_art_patient - output[6])^2 +
+                        (pco2_art_patient - output[9])^2,
+                    )
+
                 else
                     gradient_po2 = 0.04
                     gradient_pco2 = 0.04
                 end
 
-                array_solution = Array{Float64}(undef, 1, 15)
-                array_solution[1:14] = output
-                array_solution[15] = row_index
+                array_solution_2 = Array{Float64}(undef, 1, 24)
+                array_solution_2[1:14] = output
+                array_solution_2[15] = euclidean_distance
+                array_solution_2[16] = row_index
+                array_solution_2[17] = qt
+                array_solution_2[18] = shunt
+                array_solution_2[19] = fio2
+                array_solution_2[20] = hb_global
+                array_solution_2[21] = be_global
+                array_solution_2[22] = dead_space
+                array_solution_2[23] = po2_ven_input
+                array_solution_2[24] = pco2_ven_input
 
                 vo2 = output[1]
                 vco2 = output[2]
@@ -344,7 +377,7 @@ results.
                    gradient_pco2 <= tolerance_2 &&
                    r <= 1
                     open(path_2, "a") do io
-                        writedlm(io, array_solution, ";")
+                        writedlm(io, array_solution_2, ",")
                     end
 
                 end
@@ -356,6 +389,8 @@ results.
 
     end
 end
+
+=#
 
 println("")
 show(to, linechars = :ascii)
