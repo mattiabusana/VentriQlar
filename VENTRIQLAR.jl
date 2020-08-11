@@ -6,14 +6,15 @@ using StatsBase
 
 clearconsole()
 
-println("===========================================")
-println("------VentriQlar------")
+println("============================================")
+println("-----------------VentriQlar-----------------")
+println("")
 println("Ventilation-perfusion mismatch calculator")
 println("------------------------------------------")
 println("Mattia Busana M.D.")
 println("Copyright 2020")
 println("Version 1.0")
-println("===========================================")
+println("============================================")
 
 to = TimerOutput()
 
@@ -30,12 +31,12 @@ include("atrium_composition.jl")
 
 # General settings
 iteration_number = 1_000_000  #Default =
-n_comparts = 100  #Default =
-tolerance_1 = 0.05  #Tolerance at STEP 1, default = 10%
+n_comparts = 500  #Default =
+tolerance_1 = 0.1  #Tolerance, default = 10%
 dummy_gradient = false   #True to escape from debugging and start calculations
 
 # Patient asset input
-patient_file_name = "prova3"
+patient_file_name = "normal_subject"
 qt = 5
 shunt = 0.02
 fio2 = 0.21
@@ -47,13 +48,13 @@ pco2_ven_input = 50
 
 # Patient asset TARGET
 po2_art_patient = 90
-pco2_art_patient = 44
+pco2_art_patient = 40
 
 
 # Header writing, STEP 1
 path = "Results//" * patient_file_name * ".csv"
 headers =
-    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven" "min_vaq"]
+    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven" "min_vaq" "po2_patient" "pco2_patient" "gradient_po2" "gradient_pco2"]
 open(path, "w") do io
     writedlm(io, headers, ",")
 end
@@ -123,7 +124,9 @@ println("")
 println("")
 println("###### START ITERATION STEP 1 ######")
 
-@timeit to "Random compartments choice, STEP 1" begin
+@timeit to "Random compartments choice" begin
+
+@timeit to "Single iteration" begin
 
     # Random sampling in the defined space
     for index = 1:iteration_number
@@ -184,7 +187,7 @@ println("###### START ITERATION STEP 1 ######")
         end
 
 
-        array_solution = Array{Float64}(undef, 1, 25)
+        array_solution = Array{Float64}(undef, 1, 29)
         array_solution[1:14] = output
 
         vo2 = output[1]
@@ -207,6 +210,10 @@ println("###### START ITERATION STEP 1 ######")
             array_solution[23] = po2_ven_input
             array_solution[24] = pco2_ven_input
             array_solution[25] = min_vaq
+            array_solution[26] = po2_art_patient
+            array_solution[27] = pco2_art_patient
+            array_solution[28] = gradient_po2
+            array_solution[29] = gradient_pco2
 
             global solutions = vcat(solutions, output)
             open(path, "a") do io
@@ -215,6 +222,8 @@ println("###### START ITERATION STEP 1 ######")
         end
 
     end
+
+end
 
 end
 

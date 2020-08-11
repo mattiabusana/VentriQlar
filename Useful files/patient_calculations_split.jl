@@ -7,7 +7,9 @@ using StatsBase
 clearconsole()
 
 println("===========================================")
-println("VENTILATION-PERFUSION MISMATCH CALCULATOR")
+println("------VentriQlar------")
+println("Ventilation-perfusion mismatch calculator")
+println("------------------------------------------")
 println("Mattia Busana M.D.")
 println("Copyright 2020")
 println("Version 1.0")
@@ -53,14 +55,14 @@ pco2_art_patient = 44
 # Header writing, STEP 1
 path = "Results//" * patient_file_name * "_step_1.csv"
 headers =
-    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven"]
+    ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven" "min_vaq"]
 open(path, "w") do io
     writedlm(io, headers, ",")
 end
 
 
 # Find minimum VA/Q compartment and related R
-min_vaq, min_r =
+global min_vaq, min_r =
     find_r_minimum(fio2, hb_global, be_global, pco2_ven_input, pco2_ven_input)
 
 
@@ -184,7 +186,7 @@ println("###### START ITERATION STEP 1 ######")
         end
 
 
-        array_solution = Array{Float64}(undef, 1, 24)
+        array_solution = Array{Float64}(undef, 1, 25)
         array_solution[1:14] = output
 
         vo2 = output[1]
@@ -206,6 +208,7 @@ println("###### START ITERATION STEP 1 ######")
             array_solution[22] = dead_space
             array_solution[23] = po2_ven_input
             array_solution[24] = pco2_ven_input
+            array_solution[25] = min_vaq
 
             global solutions = vcat(solutions, output)
             open(path, "a") do io
