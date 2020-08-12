@@ -37,6 +37,8 @@ function vaq_distribution_model_split(
     for (index, vq_compart) in enumerate(distribution)
         println("")
         println("$index/", length(distribution), " compartments")
+        #println("VAQ = ", vq_compart)
+        #println("R start = ", last_r)
         vq_calculated, o2_cont, co2_cont, ph, r_index = gvnvaq(
             vq_compart,
             fio2,

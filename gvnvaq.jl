@@ -15,13 +15,17 @@ function gvnvaq(
     array_r = log_distribution(minimum_r, 100, 500)
 
     for r in collect(Iterators.rest(array_r, last_r))
-        global vaq_calculated, cont_o2, cont_co2, ph, _ =
-            fndvaq(fio2, hb, be, po2_mix, pco2_mix, r)
+        global vaq_calculated, cont_o2, cont_co2, ph, _, _ =
+            fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r)
         gradient_vaq = abs((given_vaq - vaq_calculated) / given_vaq)
 
+        #println("Gradient VAQ = ", gradient_vaq)    # Debug only
+
         if given_vaq <= 0.1 && given_vaq >= 0
-            tolerance = 0.25
+            tolerance = 0.1
         elseif given_vaq > 0.1 && given_vaq <= 1
+            tolerance = 0.1
+        elseif given_vaq > 1 && given_vaq <= 10
             tolerance = 0.1
         else
             tolerance = 0.05
