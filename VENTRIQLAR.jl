@@ -30,24 +30,24 @@ include("atrium_composition.jl")
 
 # General settings
 iteration_number = 1_000_000  #Default =
-n_comparts = 100  #Default =
+n_comparts = 500  #Default =
 tolerance_1 = 0.1  #Tolerance, default = 10%
 dummy_gradient = false   #True to escape from debugging and start calculations
 
 # Patient asset input
-patient_file_name = "pt1"
-qt = 8.064
-shunt = 0.4
-fio2 = 0.9
-hb_global = 9.5
-be_global = 15.2
+patient_file_name = "normal_subject"
+qt = 5
+shunt = 0.02
+fio2 = 0.21
+hb_global = 14
+be_global = 0
 dead_space = 0.3
-po2_ven_input = 38
-pco2_ven_input = 73.8
+po2_ven_input = 40
+pco2_ven_input = 45
 
 # Patient asset TARGET
-po2_art_patient = 105
-pco2_art_patient = 71
+po2_art_patient = 95
+pco2_art_patient = 40
 
 
 # Header writing, STEP 1
@@ -82,6 +82,7 @@ distribution = compartments_distribution(n_comparts, dist_min, dist_max)
         distribution,
         min_vaq,
         min_r,
+        max_r,
         fio2,
         hb_global,
         be_global,
@@ -193,6 +194,10 @@ println("###### START ITERATION STEP 1 ######")
             vco2 = output[2]
 
             r = vco2 / vo2
+
+            #println("Gradient PO2 = ", gradient_po2)
+            #println("Gradient PCO2 = ", gradient_pco2)
+            #println("PO2 = ", output[6])
 
             #Adding solution if below tolerance with its index
             if gradient_po2 <= tolerance_1 &&

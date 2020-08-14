@@ -39,7 +39,11 @@ function find_vq_max(fio2, hb, be, po2, pco2)
             fndvaq_modified(fio2, hb, be, po2, pco2, r)
         print("-")
 
-        if co2_compart <= 0
+        #println("VAQ = ", vaq)          #For debug
+        #println("PCO2 = ", pco2_compart)
+        #println("CO2 content = ", co2_compart)
+
+        if co2_compart <= 0 || vaq >= 105
             println("")
             println("Found!")
             println("Maximum R = ", last_r)

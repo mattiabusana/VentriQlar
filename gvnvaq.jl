@@ -7,12 +7,13 @@ function gvnvaq(
     pco2_mix,
     last_r;
     minimum_r = 0.01,
+    maximum_r = 100,
 )
 
     #include("fndvaq.jl")
     #include("physiology_functions.jl")
 
-    array_r = log_distribution(minimum_r, 100, 500)
+    array_r = log_distribution(minimum_r, maximum_r, 1000)
 
     for r in collect(Iterators.rest(array_r, last_r))
         global vaq_calculated, cont_o2, cont_co2, ph, _, _ =
@@ -22,7 +23,7 @@ function gvnvaq(
         #println("Gradient VAQ = ", gradient_vaq)    # Debug only
 
         if given_vaq <= 0.1 && given_vaq >= 0
-            tolerance = 0.1
+            tolerance = 0.25
         elseif given_vaq > 0.1 && given_vaq <= 1
             tolerance = 0.1
         elseif given_vaq > 1 && given_vaq <= 10

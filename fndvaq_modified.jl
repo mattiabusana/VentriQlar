@@ -12,8 +12,7 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
 
     end
 
-
-    global pco2_compart = 5
+    global pco2_compart = 1
     r_blood = 100000000000000
     gradient_r = 1000000000000
     global index = 0
@@ -80,7 +79,7 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
 
             global vaq = (8.63 * diff_ven_alv_co2) / pco2_compart
 
-            #print("VAQ = ", vaq)
+            #println("VAQ = ", vaq)
             break
         end
     end

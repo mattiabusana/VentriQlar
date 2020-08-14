@@ -2,6 +2,7 @@ function vaq_distribution_model_split(
     distribution,
     min_vaq,
     min_r,
+    max_r,
     fio2,
     hb_global,
     be_global,
@@ -48,6 +49,7 @@ function vaq_distribution_model_split(
             pco2_ven_input,
             last_r,
             minimum_r = min_r,
+            maximum_r = max_r,
         )
 
         global last_r = r_index

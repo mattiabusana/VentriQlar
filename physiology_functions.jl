@@ -84,3 +84,19 @@ function log_distribution(min, max, n_comparts)
     return distribution
 
 end
+
+function kelman_co2(ph, pco2, hb, sat_100; temp = 37)
+    p = 7.4 - ph
+    pk = 6.086 + 0.042 * p + (38 - temp) * (0.00472 + 0.00139 * p)
+    t = 37 - temp
+    sol = 0.0307 + 0.00057 * t + 0.00002 * t * t
+    dox = 0.590 + 0.2913 * p - 0.0844 * p * p
+    dr = 0.664 + 0.2275 * p - 0.0938 * p * p
+    d = dox + (dr - dox) * (1 - sat_100 / 100)
+    cp = sol * pco2 * (1 + 10^(ph - pk))
+    cc = d * cp
+    hcrit = (hb * 3)
+    hcrit = hcrit * 0.01
+    carb = (hcrit * cc + (1 - hcrit) * cp) * 2.22
+    return carb
+end
