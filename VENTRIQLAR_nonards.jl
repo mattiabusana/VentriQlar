@@ -3,6 +3,9 @@
 using DelimitedFiles
 using TimerOutputs
 using StatsBase
+using CSV
+using Tables
+using WAV
 
 #clearconsole()
 
@@ -25,32 +28,37 @@ include("fndvaq_modified.jl")
 include("atrium_composition.jl")
 
 
+path_to_file = "/Users/mattiabusana/Library/Mobile Documents/com~apple~CloudDocs/Lavoro/Articoli/VAQ mismatch COVID/Data/ards_non_covid/non_ards.csv"
+matrix_data = CSV.File(path_to_file, delim = ",", header = 0) |> Tables.matrix
+
+index_patient = 1
+
 
 # General settings
-iteration_number = 1_000_000
+iteration_number = 100_000
 n_comparts = 500  
-tolerance_1 = 0.15 
+tolerance_1 = 1
 dummy_gradient = false 
 
 # Patient asset input
-patient_file_name = "pat_16"
-qt = 9.1
+patient_file_name = "pat_" * string(index_patient)
+qt = matrix_data[index_patient, 1]
 shunt_phys = 0.005
-shunt = 0.53 + shunt_phys 
-fio2 = 0.4
-hb_global = 9.3
-be_global = 0.5
-dead_space = 0.34
-po2_ven_input = 34
-pco2_ven_input =  40.6
+shunt = matrix_data[index_patient, 2] + shunt_phys 
+fio2 = matrix_data[index_patient, 3] 
+hb_global = matrix_data[index_patient, 4] 
+be_global = matrix_data[index_patient, 5] 
+dead_space = matrix_data[index_patient, 6] 
+po2_ven_input = matrix_data[index_patient, 7] 
+pco2_ven_input =  matrix_data[index_patient, 8] 
 
 # Patient asset TARGET
-po2_art_patient = 64
-pco2_art_patient =  36.9
+po2_art_patient = matrix_data[index_patient, 9] 
+pco2_art_patient =  matrix_data[index_patient, 10] 
 
 
 # Header writing, STEP 1
-path = "Results//" * patient_file_name * ".csv"
+path = "ards_non_covid//" * patient_file_name * ".csv"
 headers =
     ["vo2" "vco2" "ve" "va" "vq_global" "po2_art" "so2_art" "ph_art" "pco2_art" "mean_qt_1" "mean_qt_2" "log_sd_1" "log_sd_2" "qt_ratio" "distance" "solution" "qt" "shunt" "fio2" "hb" "be" "dead_space" "po2_ven" "pco2_ven" "min_vaq" "po2_patient" "pco2_patient" "gradient_po2" "gradient_pco2" "max_vaq"]
 open(path, "w") do io
@@ -236,5 +244,10 @@ println("###### START RANDOM COMBINATIONS ######")
 end
 
 println("")
+
+y, fs = wavread(raw"/Users/mattiabusana/Library/Mobile Documents/com~apple~CloudDocs/Lavoro/Utili/alert_scripts.wav")
+wavplay(y, fs)
+sleep(0.2)
+wavplay(y, fs)
 
 show(to, linechars = :ascii)

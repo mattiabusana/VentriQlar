@@ -10,6 +10,9 @@ function gvnvaq(
     maximum_r = 100,
 )
 
+    if last_r >= 5
+        last_r = last_r - 3
+    end
     #include("fndvaq.jl")
     #include("physiology_functions.jl")
 

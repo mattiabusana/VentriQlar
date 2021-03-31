@@ -5,7 +5,7 @@ function find_vq_min(fio2, hb, be, po2, pco2)
     println("")
     println("Finding mimimum VA/Q compartment...")
 
-    for r = 0.01:0.005:2
+    for r = 0.001:0.001:2
         vaq, _, _, _, _ = fndvaq_modified(fio2, hb, be, po2, pco2, r)
         print("-")
 
@@ -43,7 +43,7 @@ function find_vq_max(fio2, hb, be, po2, pco2)
         #println("PCO2 = ", pco2_compart)
         #println("CO2 content = ", co2_compart)
 
-        if co2_compart <= 0 || vaq >= 105
+        if co2_compart <= 0 || vaq >= 120 || vaq < 0
             println("")
             println("Found!")
             println("Maximum R = ", last_r)

@@ -12,7 +12,7 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
 
     end
 
-    global pco2_compart = 1
+    global pco2_compart = 2
     r_blood = 100000000000000
     gradient_r = 1000000000000
     global index = 0
@@ -43,6 +43,9 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
             co2_cont_compart = 0
         end
 
+        #println("PO2 = ", po2_compart)   # Debug only
+        #println("PCO2 = ", pco2_compart)
+
 
         diff_alv_ven_o2 = o2_cont_compart - o2_cont_mix
         diff_ven_alv_co2 = co2_cont_mix - co2_cont_compart
@@ -51,12 +54,14 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
 
         gradient_r = abs(r_gas - r_blood) / r_gas
 
-        if po2_compart <= -10000
+        #println("R = ", r_blood)
+        #println("Gradient = ", gradient_r)
+        #println("")
+
+        if po2_compart <= 0
             vaq = -500
             break
         end
-
-        #println("Gradient = ", gradient_r)           # Debug only
 
         if gradient_r >= 1
             pco2_compart += 1
@@ -65,8 +70,8 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
         elseif gradient_r < 0.5 && gradient_r >= 0.05
             pco2_compart += 0.1
         else
-            # Debug only
-
+            #Debug only
+            #println("Gradient = ", gradient_r)
             #println("Found R blood = R gas")
             #println("PaCO2 = ", pco2_compart)
             #println("PaO2 = ", po2_compart)
@@ -74,6 +79,7 @@ function fndvaq_modified(fio2, hb, be, po2_mix, pco2_mix, r_gas)
             #println("Diff alv ven O2 = ", diff_alv_ven_o2)
             #println("Diff alv ven CO2 = ", diff_ven_alv_co2)
             #println("Cont CO2 compart = ", co2_cont_compart)
+            #println("Cont O2 compart = ", o2_cont_compart)
             #println("pH compart = ", ph_compart)
             #println("Index = ", index)
 
